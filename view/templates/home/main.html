@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Identifier Using Ar</title>
+
+
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+   {% comment %} <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script> {% endcomment %}
+    <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-detector.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/studio-backend/master/src/modules/marker/tools/gesture-handler.js"></script>
+
+    <script>
+        AFRAME.registerComponent('videohandler', {
+            schema: {
+                src: {
+                    type: 'string',
+                    default: ''
+                }
+            },
+            init: function() {
+                var marker = this.el;
+                this.vid = document.querySelector(this.data.src);
+
+                marker.addEventListener('markerFound', function() {
+                    this.toggle = true;
+                    this.vid.play();
+                }.bind(this));
+
+                marker.addEventListener('markerLost', function() {
+                    this.toggle = false;
+                    this.vid.pause();
+                }.bind(this));
+            },
+        });
+    </script>
+</head>
+
+<body style="margin: 0; overflow: hidden;">
+
+    <a-scene vr-mode-ui="enabled: false;" loading-screen="enabled: false;" renderer="logarithmicDepthBuffer: true;" arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;" id="scene" gesture-detector>
+
+        {% for item in product %}
+        <a-assets>
+            <video id="vid{{item.id}}" src="{{item.productModelURL}}" preload="auto" response-type="arraybuffer" loop crossorigin webkit-playsinline muted autoplay playsinline></video> {% comment %}
+            <a-asset-item id="animated-asset{{item.id}}" src="{{item.productModelURL}}"></a-asset-item> {% endcomment %}
+        </a-assets>
+
+        <a-marker id="animated-marker" type="pattern" preset="custom" url="{{item.markerURL}}" videohandler="src: #vid{{item.id}}" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5" raycaster="objects: .clickable" emitevents="true" cursor="fuse: false; rayOrigin: mouse;"
+            id="markerA">
+
+            {% comment %}
+            <a-entity id="bowser-model" scale="0.194452650363499 0.194452650363499 0.194452650363499" animation-mixer="loop: repeat" gltf-model="#animated-asset{{item.id}}" class="clickable" gesture-handler></a-entity> {% endcomment %}
+            <a-video src="#vid{{item.id}}" scale="1 1 1" position="0 0.1 0" rotation="-90 0 0" class="clickable" gesture-handler></a-video>
+
+        </a-marker>
+        {% endfor %}
+
+        <a-entity camera></a-entity>
+
+    </a-scene>
+
+
+    {% for item in product %} {% endfor %}
+
+
+</body>
+
+</html>
